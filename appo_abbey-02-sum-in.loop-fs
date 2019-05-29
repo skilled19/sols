@@ -1,0 +1,8 @@
+et testin = System.IO.File.ReadAllText("/tmp/input.txt")
+
+let solve (xs: string) =
+    xs.Split(' ')
+    |> Seq.map int
+    |> Seq.sum
+    
+printfn "%A" (solve testin)
