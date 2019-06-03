@@ -1,0 +1,20 @@
+function find_dice_used(X::Array{Int64})
+  P = Array(Int64, 30, 3)
+  ns = [2, 4, 6, 8, 10, 12]
+  M, m = maxmin(X)
+
+  for nd = 1:5 # number of dice
+    for dt = 1:6 # dice type
+      c = (nd - 1)*6 + dt
+      P[c, 1] = nd
+      P[c, 2] = nd * ns[dt]
+      P[c, 3] = (P[c, 1] - m)^2 + (P[c, 2] - M)^2
+    end
+  end
+  
+  ind = indmin(P[:,3])
+  x = P[ind, 1]
+  y = int(P[ind, 2] / x)
+  S = string(x,"d",y)
+  return S
+end

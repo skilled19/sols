@@ -1,0 +1,46 @@
+import Data.List.Split(splitOn)
+import Data.List(sort,group)
+
+main = do
+    contents <- readFile "input51.txt"
+    let eingabe = (map (map read)) . (map words) . (map init) . lines $ contents :: [[Int]]    
+    let ergebnis = fkt eingabe
+    let ausgabe = unwords ergebnis  
+    writeFile "output51.txt" ausgabe 
+
+fkt :: [[Int]] -> [String]
+fkt [] = [] 
+fkt (kopf:rest) = ((show (fst x)) ++ "d" ++ (show (snd x))):(fkt rest)
+                      where x = minsuchen kopf (amoeglich kopf alle) (0,0) 100 
+
+minsuchen :: [Int] -> [(Int,Int)] -> (Int,Int) -> Double -> (Int,Int)
+minsuchen _ [] akk _ = akk
+minsuchen werte (kopf:rest) akk mini = if differenz (concreteDist kopf werte) (snd(theorDist kopf)) < mini 
+                                              then minsuchen werte rest kopf (differenz (concreteDist kopf werte) (snd(theorDist kopf)))  
+                                              else minsuchen werte rest akk mini
+
+differenz :: [Double] -> [Double] -> Double
+differenz a b = foldl (\n p -> (n + abs(fst(p)-snd(p)))) 0 (zip a b)
+
+concreteDist :: (Int,Int) -> [Int] -> [Double]
+concreteDist (a,w) eingabe = map (\x -> (fromIntegral(count x eingabe))/100) [a..a*w]
+                                 where count x list = length (filter (\y -> y == x) list)
+
+theorDist :: (Int,Int) -> ((Int,Int),[Double])
+theorDist (a,w) = ((a,w),(map (\x -> (fromIntegral(x))/(fromIntegral(sum(dist)))) dist))
+                      where dist = map length (group $ sort(map sum (sequence $ replicate a [1..w])))
+
+amoeglich :: [Int] -> [(Int,Int)] -> [(Int,Int)] 
+amoeglich liste bisher
+        | 1 `elem` liste = [(a,w) | (a,w) <- bisher, a <= 1]
+        | 2 `elem` liste = [(a,w) | (a,w) <- bisher, a <= 2]
+        | 3 `elem` liste = [(a,w) | (a,w) <- bisher, a <= 3] 
+        | 4 `elem` liste = [(a,w) | (a,w) <- bisher, a <= 4]
+        | otherwise = wmoeglich liste bisher
+        
+wmoeglich :: [Int] -> [(Int,Int)] -> [(Int,Int)] 
+wmoeglich liste bisher = [(a,w) | (a,w) <- bisher, a*w >= maximum(liste)]
+
+-- alle Würfelmöglichkeiten
+alle :: [(Int,Int)]        
+alle = zip (concatMap (replicate 6) [1..5]) (concat (replicate 5 [2,4..12]))

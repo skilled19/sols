@@ -1,0 +1,109 @@
+extern crate input;
+
+use input::Scan;
+use std::collections::HashMap;
+use std::fmt;
+use std::u32;
+
+static COUNTS: [usize; 5] = [1, 2, 3, 4, 5];
+static SIDES: [usize; 6] = [2, 4, 6, 8, 10, 12];
+
+fn main() {
+    input::n_cases(3, |s| s.next_until("0"))
+        .solve(best_fit_dice_distribution)
+        .answer_line();
+}
+
+// Finds the collection of dice that best fit an observed distribution of
+// rolls. The idea is to compute a discrete probability distribution based on
+// the provided sample of rolls, generate the probability distribution for each
+// possible combination of dice (i.e., 1d2, 2d2, ... 4d12, 5d12), then find the
+// one with the smallest distance to the sample distribution.
+fn best_fit_dice_distribution(rs: Vec<usize>) -> String {
+    let r_dist = roll_distribution(rs);
+    let d_dists =
+        SIDES.iter().cloned().flat_map(
+            |s| COUNTS.iter().cloned().map(
+                move |c| DiceDistribution::new(c, s)));
+    let best_fit = d_dists.min_by_key(|dd| dd.distance(&r_dist)).unwrap();
+    format!("{}", best_fit)
+}
+
+type RollDistribution = HashMap<usize, f32>;
+
+// Computes the observed probability of each distinct roll.
+fn roll_distribution(rs: Vec<usize>) -> RollDistribution {
+    let mut d = HashMap::new();
+    for r in rs {
+        let count = d.entry(r).or_insert(0.0);
+        *count += 1.0;
+    }
+    normalize(&mut d);
+    d
+}
+
+// Converts a set of weights for observed outcomes into a distribution by
+// dividing each weight by the total mass.
+fn normalize(d: &mut HashMap<usize, f32>) {
+    let total = d.values().fold(0.0, |acc, p| acc + p);
+    for (_, p) in d.iter_mut() {
+        *p /= total;
+    }
+}
+
+// Represents a distribution of dice rolls for a collection of dice, each with
+// the same number of sides.
+struct DiceDistribution {
+    count: usize,
+    sides: usize,
+    p: HashMap<usize, f32>,
+}
+
+impl DiceDistribution {
+
+    // Creates a new distribution for a collection of `c` dice, each with `s`
+    // sides. The distribution is exact, based on an enumeration of each
+    // possible value after rolling one die, then a second, then a third, and
+    // so on.
+    fn new(c: usize, s: usize) -> DiceDistribution {
+        let ps = 1.0 / s as f32;
+        let mut d = (1 .. s+1).map(|v| (v, ps)).collect::<HashMap<_, _>>();
+        for _ in 1 .. c {
+            let mut dn = HashMap::new();
+            for v in 1 .. s+1 {
+                for (r, pr) in &d {
+                    let e = dn.entry(r + v).or_insert(0.0);
+                    *e += pr * ps;
+                }
+            }
+            d = dn;
+            normalize(&mut d);
+        }
+        DiceDistribution { count: c, sides: s, p: d }
+    }
+
+    // Computes a distance metric between this distribution and an observed
+    // distribution of dice rolls. We define the distance as the sum of the
+    // squared residuals; if we observe a roll with 0 probability according to
+    // our ideal distribution then we return the maximum distance. Floats don't
+    // belong to Ord (because they can't be compared for equality), so we have
+    // to return an integer. We do that by dividing the computed distance by
+    // the theoretical maximum, then scaling to u32::MAX.
+    fn distance(&self, rd: &RollDistribution) -> u32 {
+        let mut r2 = 0.0;
+        for (r, pr) in rd {
+            if !self.p.contains_key(r) {
+                return u32::MAX;
+            }
+            r2 += (self.p[r] - pr).powi(2);
+        }
+        let d = (r2 / self.p.len() as f32) * u32::MAX as f32;
+        d as u32
+    }
+}
+
+impl fmt::Display for DiceDistribution {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}d{}", self.count, self.sides)
+    }
+}
