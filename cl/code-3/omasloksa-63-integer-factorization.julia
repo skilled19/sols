@@ -1,0 +1,10 @@
+using Primes
+
+f = open("input.txt")
+count = parse(Int, readline(f))
+for i = 1:count
+    number = parse(Int, readline(f))
+    factors = factor(Vector, number)
+    print(join(factors, "*"))
+    print(" ")
+end

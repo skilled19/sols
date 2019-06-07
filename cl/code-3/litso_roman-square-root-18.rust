@@ -1,0 +1,37 @@
+use std::io::{self, BufRead};
+
+fn approximate_root(x: f32, n: i32) -> f32 {
+    let mut r = 1.0;
+    for _i in 0..n {
+        r = (r + x / r) / 2.0
+    }
+    return r;
+}
+
+fn main() {
+    let mut buffer = String::new();
+    let input = io::stdin();
+    input.read_line(&mut buffer).expect("Failed to read line");
+    let number_of_tests = buffer.trim().parse().unwrap();
+    let mut result: Vec<f32> = Vec::with_capacity(number_of_tests);
+
+    for line in input.lock().lines().take(number_of_tests) {
+        let mut nums: Vec<i32> = line.unwrap()
+            .split_whitespace()
+            .map(|n| n.parse().unwrap())
+            .collect();
+        let (x, n) = (nums[0], nums[1]);
+        let t = approximate_root(x as f32, n);
+        result.push(t);
+    }
+
+    println!(
+        "{}",
+        result
+            .iter()
+            .map(|n| n.to_string())
+            .collect::<Vec<_>>()
+            .join(" ")
+    )
+}
+
