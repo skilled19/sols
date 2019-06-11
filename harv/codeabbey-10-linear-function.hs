@@ -1,0 +1,1 @@
+main = getContents >>= print <$> unwords <$> map (\ (x1:y1:x2:y2:_) -> (\ dx dy -> (\ dydx -> "(" ++ (show dydx) ++ " " ++ (show (y1 - (x1 * dydx))) ++ ")") $ round ((fromIntegral dy) / (fromIntegral dx))) (x2 - x1) (y2 - y1)) <$> map (map (\ s -> read s ::Int) <$> words) <$> drop 1 <$> lines

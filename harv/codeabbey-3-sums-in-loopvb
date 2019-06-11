@@ -1,0 +1,21 @@
+Sub three()   'ñëîæèòü ïàðû ÷èñåë
+
+Dim a As Double
+Dim b As Double
+Dim c As Double
+Dim N As Double
+
+With Sheets("3")
+
+    N = Cells(1, 1).Value
+    
+    For i = 1 To N
+        a = Cells(i + 1, 1).Value
+        b = Cells(i + 1, 2).Value
+        c = a + b
+        Cells(4 + N, i).Value = c
+    Next i
+
+End With
+
+End Sub

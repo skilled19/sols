@@ -1,0 +1,52 @@
+Public Class Form1
+    Private Sub Button1_Click(sender As Object, e As EventArgs) Handles butCalc.Click
+        Dim inputstring As String
+        Dim first As Decimal
+        Dim second As Decimal
+        Dim listArray() As String
+
+        ReDim listArray(ListBox1.Items.Count - 1)
+        ListBox1.Items.CopyTo(listArray, 0)
+
+        For Each item In listArray
+            inputstring = item
+
+            Dim StringArray() As String = Split(inputstring)
+
+            Decimal.TryParse(StringArray(0), first)
+            Decimal.TryParse(StringArray(1), second)
+
+            If first < second Then
+                ListBox2.Items.Add(first)
+            Else
+                ListBox2.Items.Add(second)
+            End If
+        Next
+
+
+    End Sub
+
+    Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        ListBox1.SelectionMode = SelectionMode.MultiExtended
+        ListBox2.SelectionMode = SelectionMode.MultiExtended
+    End Sub
+
+    Private Sub ListBox1_KeyDown(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyEventArgs) Handles ListBox1.KeyDown
+
+        If e.Control AndAlso e.KeyCode = Keys.V Then
+            ListBox1.Items.Add(Clipboard.GetText.ToString)
+        End If
+    End Sub
+    Private Sub ListBox2_KeyDown(ByVal sender As Object, ByVal e As System.Windows.Forms.KeyEventArgs) Handles ListBox2.KeyDown
+
+        If e.Control AndAlso e.KeyCode = Keys.C Then
+            Dim copy_buffer As New System.Text.StringBuilder
+            For Each item As Object In ListBox2.SelectedItems
+                copy_buffer.AppendLine(item.ToString)
+            Next
+            If copy_buffer.Length > 0 Then
+                Clipboard.SetText(copy_buffer.ToString)
+            End If
+        End If
+    End Sub
+End Class

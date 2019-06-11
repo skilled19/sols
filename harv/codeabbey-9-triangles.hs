@@ -1,0 +1,1 @@
+main = getContents >>= print <$> unwords <$> map show <$> map (\ (a:b:c:_) -> if abs (a - b) >= c then 0 else if abs (a - c) >= b then 0 else 1) <$> map (map (\ s -> read s ::Int) <$> words) <$> drop 1 <$> lines
